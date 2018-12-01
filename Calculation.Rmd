@@ -1,0 +1,15 @@
+---
+title: "Some_Calculation"
+author: "PoMingChen"
+date: "2018/12/1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+```
+

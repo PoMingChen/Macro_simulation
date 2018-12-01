@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # A
 ```
 
+
+
 ```{r}
 eigen(A)
 0.99882112^2+(-0.04854247)^2
