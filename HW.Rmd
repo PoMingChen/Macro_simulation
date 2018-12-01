@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-A <- matrix(c(1.0571, -1, -0.0059, 0.9843),2,2,byrow=TRUE)
-A
+# A <- matrix(c(1.0571, -1, -0.0059, 0.9843),2,2,byrow=TRUE)
+# A
 ```
 
 ```{r}
@@ -37,16 +37,44 @@ chi <- 2
 tau_c <- 0.1
 ```
 
-```{r 第三題K_star}
-M <- {((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)))-delta}
-P <- {((1-tau_k)*(1-alpha)*A)/(rho+delta*(1-tau_k))}
-Q <- (alpha*A*(1-tau_l))/(chi*(1+tau_l))
+```{r 求解K_star}
+# A list with at least four components: root and f.root give the location of the root and the value of the function evaluated at that point. iter and estim.prec give the number of iterations(疊代，反覆運算，數學裡若干次使用一個數學法則得出的量) used and an approximate estimated precision for root. (If the root occurs at one of the endpoints, the estimated precision is NA.)
 
-K_star <- ((M^(-sigma))*(P^((1-alpha+epislon)/alpha))*Q)^(1/(epislon+sigma))
+# Further components may be added in future: component init.it was added in R 3.1.0.
+
+funToFindKRoot <- function(K,a){
+    rho <- 0.04
+    delta <- 0.05
+    tau_k <- 0.3
+    alpha <- 0.64
+    sigma <- 2
+    A <- 1
+    epislon <- 1.5
+    tau_l <- 0.2
+    chi <- 2
+    tau_c <- 0.1
+    l <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K
+    w <- A*alpha*l^(alpha-1)*K^(1-alpha)
+    
+M <- ((1-tau_l)*w)/(chi*(1+tau_c))
+
+P <- (1-(((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K)
+Q <- (((1-tau_k)*(1-alpha))/(rho+alpha*delta*(1-tau_k)))
+
+return(K-(((M^(1/sigma))*(P^(epislon/sigma))*Q)))
+}
+
+uniroot(funToFindKRoot, c(1,4), tol = 0.0001) -> solofK
+
+solofK
+
+K_star <- solofK$root
+K_star
 ```
 
 ```{r 第三題L_star}
 L_star <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K_star
+L_star
 
 #(rho+delta*(1-tau_k))
 #((1-tau_k)*(1-alpha)*A)
@@ -54,6 +82,7 @@ L_star <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K_star
 
 ```{r 第三題C_star}
 C_star <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)))-delta)*K_star
+C_star
   
 #(rho+delta*(1-tau_k))
 #((1-tau_k)*(1-alpha))
@@ -71,5 +100,17 @@ S <- chi*(((1-L_star)^(1-epislon))/(1-epislon))
 u_star <- R+S
 
 U_star <- (1+rho)/rho*u_star
+```
+
+```{r}
+K_star#2.070313
+L_star#0.311624
+C_star#0.512649
+y_star#0.6161647
+u_star#-5.31578
+U_star#-138.2103
+
+
+
 ```
 
