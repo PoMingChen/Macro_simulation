@@ -1,0 +1,148 @@
+---
+title: "Marco Mid-term HW Calibration"
+author: "Group2"
+date: "2018/12/6"
+output:
+     pdf_document:
+         latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# install.packages("readxl")
+# library(readxl)
+
+Nationaldata <- read_excel("./Nationaldata.xlsx")
+Nationaldata %>% select(-c(2)) %>% rename(平均每人GDP折合美元 = X__2) %>% 
+  rename(平均每人民間消費折合美元 = X__3) -> Nationaldata
+
+Nationaldata[61:70,] -> Nationaldata
+```
+
+根據勞動部資料，我們假設每週工時為40 + 46*0.2*0.25(一個月有20%時間需要加班) = 42.3hr。因此起初每週工作比例lzero = 42.3/168 = 0.2518。
+
+> 勞動基準法第30條：勞工每日正常工作時間不得超過8小時，每週正常工作時數不得超過40小時。以及，勞動基準法第32條：雇主延長勞工之工作時間連同正常工作時間，1日不得超過12小時。 延長之工作時間，1個月不得超過46小時。
+
+進一步地帶入l*公式，可求得資本的起初值kzero=1.770222
+```{r}
+lzero <- 0.2518
+
+funtok <- function(k) {
+  lzero <- 0.2518 #每週工作時數估計0.2518(42.3hr)
+  rho2 <- 0.01115 #台灣銀行定存利率
+  delta2 <- 0.04 #折舊率(解釋：)
+  tau_k2 <- 0.4  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+  alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+  sigma2 <- 0.7  #毛慶生論文
+  A2 <- 1 #normalized to 1
+  epislon2 <- 0.77 #毛慶生論文
+  tau_l2 <- 0.12 #財政部
+  tau_c2 <- 0.05 #發票
+  
+  #l已知，求解k
+  return(lzero-(((rho2+delta2*(1-tau_k2))/((1-tau_k2)*(1-alpha2)*A2))^(1/alpha2))*k)
+  
+  uniroot(funtok, c(-3,50), tol = 0.000000001) -> solofk
+
+  solofk
+
+  solofk$root -> kzero
+}
+
+uniroot(funtok, c(-3,50), tol = 0.000000001) -> solofk
+
+solofk
+
+solofk$root -> kzero
+
+```
+
+```{r}
+lzero #0.2518
+kzero #28.47663
+```
+
+進一步地，我們可以求得起初的消費c是多少。
+```{r}
+lzero #0.2518
+kzero #28.47663
+
+funtoc <- function(c) {
+  lzero <- 0.2518 #每週工作時數估計0.2518(42.3hr)
+  kzero #28.47663
+  rho2 <- 0.01115 #台灣銀行定存利率
+  delta2 <- 0.04 #折舊率(解釋：)
+  tau_k2 <- 0.4  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+  alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+  sigma2 <- 0.7  #毛慶生論文
+  A2 <- 1 #normalized to 1
+  epislon2 <- 0.77 #毛慶生論文
+  tau_l2 <- 0.12 #財政部
+  tau_c2 <- 0.05 #發票
+  
+  C_star <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)))-delta)*K_star
+  
+  #l已知，求解k
+  return(c-(((rho2+delta2*(1-tau_k2))/((1-tau_k2)*(1-alpha2)*A2))^(1/alpha2))*k)
+}
+
+uniroot(funtok, c(-3,50), tol = 0.000000001) -> solofk
+
+solofk
+
+solofk$root -> kzero
+
+```
+
+
+> 我要怎麼驗證我做出來的c和實際有的National data是符合的，好像有點不太明白我們模擬出來的c，他的單位是什麼？
+
+```{r}
+
+```
+
+
+
+### 設定參數
+
+內生變數：
+
+- y : 這邊要用人均的，因為A也是有normalized到1
+
+- c
+
+- l : 勞動基準法第30條：勞工每日正常工作時間不得超過8小時，每週正常工作時數不得超過40小時。 勞動基準法第32條：雇主延長勞工之工作時間連同正常工作時間，1日不得超過12小時。 延長之工作時間，1個月不得超過46小時。
+
+每週工時假設為：40+46*0.2=49.2，約取50hr。50/168=0.2976
+
+- k
+
+#### 設定外生參數
+
+- 時間偏好率(rho)：參考自臺灣銀行定期存款利率。時間偏好率為個人主觀在跨期選擇時候，對當期消費的偏愛程度。市場利率則為現實世界借貸雙方的達成均衡的市場利率，加上臺灣進入低利時代已久，因此民眾普遍以定存利率當做當期與未來做消費投資的基本參考。因此其作為時間偏好率。
+
+- 折舊率(delta)：
+
+- 資本利得稅（tau_k）：
+
+- 產生勞動份額（labor share)(alpha) ：將生產函數取ln微分
+
+
+```{r 求chi in calibration}
+funToFindX <- function(X){
+    rho <- 0.01115 #台灣銀行定存利率
+    delta <- 0.04 #折舊率
+    tau_k <- 0.4  #(房屋稅+(工地原地)房屋稅）/2
+    alpha <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+    sigma1 <- 0.7  #毛慶生論文
+    A <- 1 #normalized to 1
+    epislon <- 0.77 #毛慶生論文
+    tau_l <- 0.12 #財政部
+    tau_c <- 0.05 
+
+}
+```
+
