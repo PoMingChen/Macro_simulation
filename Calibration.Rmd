@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r set to global enviro}
 rho2 <- 0.01035 #台灣銀行定存利率
 delta2 <- 0.04 #折舊率(解釋：)
-tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
 alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
 sigma2 <- 0.7  #毛慶生論文
 A2 <- 1 #normalized to 1
@@ -38,10 +38,10 @@ library(magrittr)
 
 Nationaldata <- read_excel("./Nationaldata.xlsx")
 Nationaldata[61:70,] -> Nationaldata
-Nationaldata %>% select(-c(2)) %>% rename(平均每人GDP折合美元 = X__2) %>% 
-  rename(平均每人民間消費折合美元 = X__3) -> Nationaldata
 
-Nationaldata
+Nationaldata %>% select(-c(2)) %>% mutate(平均每人GDP折合美元 = X__2) %>% 
+  mutate(平均每人民間消費折合美元 = X__3) -> Nationaldata
+
 
 # Nationaldata %>% select(c(平均每人GDP:平均每人民間消費折合美元)) %>% as.numeric() 為什麼這個式子跑不動？
 
@@ -50,7 +50,7 @@ as.numeric(Nationaldata$平均每人GDP折合美元) -> Nationaldata$平均每�
 as.numeric(Nationaldata$平均每人民間消費支出) -> Nationaldata$平均每人民間消費支出
 as.numeric(Nationaldata$平均每人民間消費折合美元) -> Nationaldata$平均每人民間消費折合美元
 
-Nationaldata
+Nationaldata %>% select(-c(3,5))
 
 
 ```
@@ -69,7 +69,7 @@ funtok <- function(k) {
   lzero           #每週工作時數估計0.2518(42.3hr)
   rho2 <- 0.01035 #台灣銀行定存利率
   delta2 <- 0.04 #折舊率(解釋：)
-  tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+  tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
   alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
   sigma2 <- 0.7  #毛慶生論文
   A2 <- 1 #normalized to 1
@@ -94,7 +94,7 @@ kzero
 funtoc <- function(c) {
   rho2 <- 0.01035 #台灣銀行定存利率
   delta2 <- 0.04 #折舊率(解釋：)
-  tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+  tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
   alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
   sigma2 <- 0.7  #毛慶生論文
   A2 <- 1 #normalized to 1
@@ -140,7 +140,7 @@ Nationaldata
 funTochi <- function(chi){
     rho2 <- 0.01035 #台灣銀行定存利率
     delta2 <- 0.04 #折舊率(解釋：)
-    tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+    tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
     alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
     sigma2 <- 0.7  #毛慶生論文
     A2 <- 1 #normalized to 1
@@ -183,7 +183,7 @@ chi2 #1.759573
 ```
 
 ```{r}
-Beforestatics <- c(c("kzero", "lzero", "czero", "yzero", "uzero"), c(0.3525,44.02699,2.858746,4.619825,8.15725))
+Beforestatics <- c(c("kzero", "lzero", "czero", "yzero", "uzero"), c(44.02699,0.3525,2.858746,4.619825,8.15725))
 Beforestatics
 ```
 
@@ -195,8 +195,8 @@ tau_k產生下降
 rho3 <- 0.01035 #台灣銀行定存利率
 delta3 <- 0.04 #折舊率(解釋：)
 #降税
-tau_k3 <- 0.025  #(房屋稅+(工地原地)房屋稅）/2（解釋：） 
-alpha3 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+tau_k3 <- 0.25  #(房屋稅+(工地原地)房屋稅）/2（解釋：） 
+alpha3 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
 sigma3 <- 0.7  #毛慶生論文
 A3 <- 1 #normalized to 1
 epislon3 <- 0.77 #毛慶生論文
@@ -211,7 +211,7 @@ funToFindkone <- function(kone){
     rho3 
     delta3 
     tau_k3
-    alpha3 <- 0.467 
+    alpha3 <- 0.438
     sigma3 <- 0.7  
     A3 <- 1 
     epislon3 <- 0.77 
@@ -241,7 +241,7 @@ funoflcone <- function(kvalue) {
   rho3 
   delta3 
   tau_k3
-  alpha3 <- 0.467 
+  alpha3 <- 0.438 
   sigma3 <- 0.7  
   A3 <- 1 
   epislon3 <- 0.77 
@@ -261,8 +261,6 @@ funoflcone <- function(kvalue) {
   
   Afterstatics
 }
-
-funoflcone(kone1)
 
 library(plyr)
 Beforestatics %>% as.data.frame() -> Beforestatics1
