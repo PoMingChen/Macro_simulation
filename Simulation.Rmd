@@ -20,7 +20,6 @@ u_star #-5.771755  -5.748465
 U_star #-150.0656  -149.4601
 ```
 
-
 ```{r K時間路徑}
 library(dplyr)
 
@@ -42,19 +41,19 @@ for (t in 0:100) {
   rho <- 0.04
   
   
-  Ktimepath <- K_star + (-0.1161)*(0.8829)^t
+  Ktimepath <- K_star + (-0.1161)*(0.916)^t
   rbind(k,Ktimepath) -> k
   
-  Ltimepath <- L_star + (-0.1161)*(-0.0641)*((0.8829)^t)
+  Ltimepath <- L_star + (-0.1161)*(-0.044)*((0.916)^t)
   rbind(l, Ltimepath) -> l
 
-  Ctimepath <- ((Ktimepath)^(0.18)*(Ltimepath)^(-0.18))/(2.0729*(1-Ltimepath)^(-0.75))
+  Ctimepath <- ((1-Ltimepath)^(0.75)*(Ktimepath)^(0.18))/(2.0729*(Ltimepath)^(0.18))
   rbind(c, Ctimepath) -> c
   
   ytimepath <- ((Ktimepath)^(0.36))*(Ltimepath)^(0.64)
   rbind(y, ytimepath) -> y
   
-  utimepath <- ((Ctimepath^(1-sigma1))-1)/(1-sigma1) + chi*((1-Ltimepath)^(1-epislon))/(1-epislon)
+  utimepath <- 1-1/Ctimepath-4*(1/((1-Ltimepath)^0.5))
   rbind(u, utimepath) -> u
   
   Utimepath <- sum(((1/(1+rho))^t*utimepath))
@@ -62,13 +61,13 @@ for (t in 0:100) {
 }
 
 
-# k
-# l
-# c
-# y
-# u
+k
+l
+c
+y
+u
+# U
 
-畫U加總
 
 
 ```
@@ -77,21 +76,11 @@ for (t in 0:100) {
 # k %>% rbind(.,l) %>% rbind(., c)
 
 
-k %>% plot(., xlab = "time period", ylab = "k_value")
-l %>% plot(., xlab = "time period", ylab = "l_value")
-c %>% plot(., xlab = "time period", ylab = "c_value")
-y %>% plot(., xlab = "time period", ylab = "y_value")
-u %>% plot(., xlab = "time period", ylab = "u_value")
+k %>% plot(., xlab = "time period", ylab = "k_value", main = "Timepath of k")
+l %>% plot(., xlab = "time period", ylab = "l_value",main = "Timepath of l")
+c %>% plot(., xlab = "time period", ylab = "c_value",main = "Timepath of c")
+y %>% plot(., xlab = "time period", ylab = "y_value", main = "Timepath of y")
+u %>% plot(., xlab = "time period", ylab = "u_value", main = "Timepath of u")
 # U %>% plot(., xlab = "time period", ylab = "value")
 
-```
-
-
-
-```{r L時間路徑}
-Ltimepath <- L_star + 1.6329*(0.9615)^t
-```
-
-```{r C時間路徑}
-Ctimepath <- (((Ktimepath)^(-0.18))*((Ltimepath)^(-0.18)))/(2.0729*(1-Ltimepath)^(-0.75))
 ```
