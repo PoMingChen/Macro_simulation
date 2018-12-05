@@ -15,10 +15,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r set to global enviro}
-rho2 <- 0.01115 #台灣銀行定存利率
+rho2 <- 0.01035 #台灣銀行定存利率
 delta2 <- 0.04 #折舊率(解釋：)
 tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
-alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
 sigma2 <- 0.7  #毛慶生論文
 A2 <- 1 #normalized to 1
 epislon2 <- 0.77 #毛慶生論文
@@ -37,10 +37,11 @@ library(magrittr)
 
 
 Nationaldata <- read_excel("./Nationaldata.xlsx")
+Nationaldata[61:70,] -> Nationaldata
 Nationaldata %>% select(-c(2)) %>% rename(平均每人GDP折合美元 = X__2) %>% 
   rename(平均每人民間消費折合美元 = X__3) -> Nationaldata
 
-Nationaldata[61:70,] -> Nationaldata
+Nationaldata
 
 # Nationaldata %>% select(c(平均每人GDP:平均每人民間消費折合美元)) %>% as.numeric() 為什麼這個式子跑不動？
 
@@ -49,7 +50,8 @@ as.numeric(Nationaldata$平均每人GDP折合美元) -> Nationaldata$平均每�
 as.numeric(Nationaldata$平均每人民間消費支出) -> Nationaldata$平均每人民間消費支出
 as.numeric(Nationaldata$平均每人民間消費折合美元) -> Nationaldata$平均每人民間消費折合美元
 
-Nationaldata %<>% mutate(人均消費支出佔GDP比重=平均每人民間消費支出/平均每人GDP)
+Nationaldata
+
 
 ```
 
@@ -65,10 +67,10 @@ lzero <- 0.3525
 
 funtok <- function(k) {
   lzero           #每週工作時數估計0.2518(42.3hr)
-  rho2 <- 0.01115 #台灣銀行定存利率
+  rho2 <- 0.01035 #台灣銀行定存利率
   delta2 <- 0.04 #折舊率(解釋：)
   tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
-  alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+  alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
   sigma2 <- 0.7  #毛慶生論文
   A2 <- 1 #normalized to 1
   epislon2 <- 0.77 #毛慶生論文
@@ -80,7 +82,7 @@ funtok <- function(k) {
 
 }
 
-uniroot(funtok, c(-3,50), tol = 0.000000001) -> solofk
+uniroot(funtok, c(-3,100), tol = 0.000000001) -> solofk
 
 solofk$root -> kzero
 
@@ -90,10 +92,10 @@ kzero
 有了kzero，進一步地，我們可以求得起初的消費c是多少。
 ```{r 求解期初c}
 funtoc <- function(c) {
-  rho2 <- 0.01115 #台灣銀行定存利率
+  rho2 <- 0.01035 #台灣銀行定存利率
   delta2 <- 0.04 #折舊率(解釋：)
   tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
-  alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+  alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
   sigma2 <- 0.7  #毛慶生論文
   A2 <- 1 #normalized to 1
   epislon2 <- 0.77 #毛慶生論文
@@ -129,17 +131,17 @@ yzero #4.619825
 
 ```{r 整理消費佔GDP近十年比重}
 Nationaldata
-Nationaldata %>% summarise(近十年人均消費支出佔GDP比重=mean(人均消費支出佔GDP比重))
+# Nationaldata %>% summarise(近十年人均消費支出佔GDP比重=mean(人均消費支出佔GDP比重))
 ```
 
 ### 二、求解模型內尚未知的chi值
 
 ```{r 求解chi}
 funTochi <- function(chi){
-    rho2 <- 0.01115 #台灣銀行定存利率
+    rho2 <- 0.01035 #台灣銀行定存利率
     delta2 <- 0.04 #折舊率(解釋：)
     tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
-    alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+    alpha2 <- 0.438 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
     sigma2 <- 0.7  #毛慶生論文
     A2 <- 1 #normalized to 1
     epislon2 <- 0.77 #毛慶生論文
@@ -190,7 +192,7 @@ Beforestatics
 tau_k產生下降
 ```{r 比較靜態外生參數 tau_k3}
 
-rho3 <- 0.01115 #台灣銀行定存利率
+rho3 <- 0.01035 #台灣銀行定存利率
 delta3 <- 0.04 #折舊率(解釋：)
 #降税
 tau_k3 <- 0.025  #(房屋稅+(工地原地)房屋稅）/2（解釋：） 
@@ -227,7 +229,7 @@ Q <- (((1-tau_k3)*(1-alpha3))/(rho3+alpha3*delta3*(1-tau_k3)))
 return(kone-(((M^(1/sigma3))*(P^(epislon3/sigma3))*Q)))
 }
 
-uniroot(funToFindkone, c(1,50), tol = 0.000000001) -> solofkone
+uniroot(funToFindkone, c(1,100), tol = 0.000000001) -> solofkone
 
 kone1 <- solofkone$root
 kone1
