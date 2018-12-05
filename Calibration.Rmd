@@ -3,19 +3,38 @@ title: "Marco Mid-term HW Calibration"
 author: "Group2"
 date: "2018/12/6"
 output:
-     pdf_document:
-         latex_engine: xelatex
+  word_document: default
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r 整理資料}
-# install.packages("readxl")
-# library(readxl)
+```{r set to global enviro}
+rho2 <- 0.01115 #台灣銀行定存利率
+delta2 <- 0.04 #折舊率(解釋：)
+tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
+sigma2 <- 0.7  #毛慶生論文
+A2 <- 1 #normalized to 1
+epislon2 <- 0.77 #毛慶生論文
+tau_l2 <- 0.12 #財政部
+tau_c2 <- 0.05
+```
+
+```{r, include=FALSE}
+library(readxl)
 library(tidyverse)
 library(magrittr)
+```
+
+
+```{r 整理資料, echo=FALSE, results='hide', message='FALSE'}
+
 
 Nationaldata <- read_excel("./Nationaldata.xlsx")
 Nationaldata %>% select(-c(2)) %>% rename(平均每人GDP折合美元 = X__2) %>% 
@@ -34,24 +53,21 @@ Nationaldata %<>% mutate(人均消費支出佔GDP比重=平均每人民間消費
 
 ```
 
-```{r 整理消費佔GDP近十年比重}
-Nationaldata %>% summarise(近十年人均消費支出佔GDP比重=mean(人均消費支出佔GDP比重))
-#0.5380801
-```
+### ㄧ、比較靜態之前
 
 根據勞動部資料，我們假設每週工時為40 + 46*0.2*0.25(一個月有20%時間需要加班) = 42.3hr。因此起初每週工作比例lzero = 42.3/(24*5) = 0.3525。
 
 > 勞動基準法第30條：勞工每日正常工作時間不得超過8小時，每週正常工作時數不得超過40小時。以及，勞動基準法第32條：雇主延長勞工之工作時間連同正常工作時間，1日不得超過12小時。 延長之工作時間，1個月不得超過46小時。
 
 進一步地帶入l*公式，可求得資本的起初值kzero
-```{r 求解起初l*}
+```{r 求解起初k*}
 lzero <- 0.3525
 
 funtok <- function(k) {
   lzero           #每週工作時數估計0.2518(42.3hr)
   rho2 <- 0.01115 #台灣銀行定存利率
   delta2 <- 0.04 #折舊率(解釋：)
-  tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+  tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
   alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
   sigma2 <- 0.7  #毛慶生論文
   A2 <- 1 #normalized to 1
@@ -66,23 +82,17 @@ funtok <- function(k) {
 
 uniroot(funtok, c(-3,50), tol = 0.000000001) -> solofk
 
-solofk
-
 solofk$root -> kzero
 
+kzero
 ```
 
-```{r 期初l and k}
-lzero #0.3525
-kzero #44.02699
-```
-
-進一步地，我們可以求得起初的消費c是多少。czero = 1.990871
+有了kzero，進一步地，我們可以求得起初的消費c是多少。
 ```{r 求解期初c}
 funtoc <- function(c) {
   rho2 <- 0.01115 #台灣銀行定存利率
   delta2 <- 0.04 #折舊率(解釋：)
-  tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+  tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
   alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
   sigma2 <- 0.7  #毛慶生論文
   A2 <- 1 #normalized to 1
@@ -90,7 +100,6 @@ funtoc <- function(c) {
   tau_l2 <- 0.12 #財政部
   tau_c2 <- 0.05 #發票
   
-  #kzero已知，求解c
   return(c-(((rho2+delta2*(1-tau_k2))/((1-tau_k2)*(1-alpha2)))-delta2)*kzero)
 }
 
@@ -99,47 +108,37 @@ uniroot(funtoc, c(-3,50), tol = 0.000000001) -> solofc
 solofc$root -> czero
 
 czero
-
 ```
 
-```{r 期初c l k}
-lzero #0.3525
-kzero #44.02699
-czero #2.858746
-```
-
-```{r set to global enviro}
-lzero 
-kzero 
-czero 
-rho2 <- 0.01115 #台灣銀行定存利率
-delta2 <- 0.04 #折舊率(解釋：)
-tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
-alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
-sigma2 <- 0.7  #毛慶生論文
-A2 <- 1 #normalized to 1
-epislon2 <- 0.77 #毛慶生論文
-tau_l2 <- 0.12 #財政部
-tau_c2 <- 0.05
-```
-
+有了起初的l*，k*後就可以求得起初的y值。
 ```{r 期初y值}
 yzero <- A2*(lzero^alpha2)*(kzero^(1-alpha2))
 yzero
 ```
 
-```{r 期初內解變數值}
+到目前為止有了所有的內解變數值。
+```{r 期初內解變數值, eval=FALSE}
 lzero #0.3525
 kzero #44.02699
 czero #2.858746
 yzero #4.619825
 ```
 
+做簡易的資料配適度檢驗
+> czero/yzero = 0.6189 與實際資料消費支出佔GDP比重誤差情況尚可以。因此，進一步完善模型，並且做比較靜態。
+
+```{r 整理消費佔GDP近十年比重}
+Nationaldata
+Nationaldata %>% summarise(近十年人均消費支出佔GDP比重=mean(人均消費支出佔GDP比重))
+```
+
+### 二、求解模型內尚未知的chi值
+
 ```{r 求解chi}
 funTochi <- function(chi){
     rho2 <- 0.01115 #台灣銀行定存利率
     delta2 <- 0.04 #折舊率(解釋：)
-    tau_k2 <- 0.3  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
+    tau_k2 <- 0.03  #(房屋稅+(工地原地)房屋稅）/2（解釋：）
     alpha2 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
     sigma2 <- 0.7  #毛慶生論文
     A2 <- 1 #normalized to 1
@@ -164,42 +163,47 @@ chi2 <- solofchi2$root
 chi2
 ```
 
+同時，已經有起初c, l值，可以求得起初u值
 ```{r 計算期初u值}
 R <- ((czero^(1-sigma2)-1)/(1-sigma2))
 S <- chi2*(((1-lzero)^(1-epislon2))/(1-epislon2))
 uzero <- R+S
+uzero
 ```
 
-
-```{r 期初內解變數值&chi}
+比較靜態前的小整理
+```{r 期初內解變數值&chi, eval=FALSE}
 lzero #0.3525
 kzero #44.02699
 czero #2.858746
 yzero #4.619825
 chi2 #1.759573
-uzero #8.15725 因為sigma我們用的是0.77，題目模型是2，差稍微多一些
-Beforestatics <- c(kzero, lzero, czero, yzero, uzero,chi2)
+```
+
+```{r}
+Beforestatics <- c(c("kzero", "lzero", "czero", "yzero", "uzero"), c(0.3525,44.02699,2.858746,4.619825,8.15725))
 Beforestatics
 ```
 
-> 我要怎麼驗證我做出來的c和實際有的National data是符合的，好像有點不太明白我們模擬出來的c，他的單位是什麼？那是否至少y要大於c，論文：0.3107 0.4638。k是存量，所以可以很大。
+### 三、做比較靜態
 
-### 做比較靜態
-```{r 比較靜態外生參數 tau_k3=0.25}
+tau_k產生下降
+```{r 比較靜態外生參數 tau_k3}
 
 rho3 <- 0.01115 #台灣銀行定存利率
 delta3 <- 0.04 #折舊率(解釋：)
 #降税
-tau_k3 <- 0.25  #(房屋稅+(工地原地)房屋稅）/2（解釋：） 
+tau_k3 <- 0.025  #(房屋稅+(工地原地)房屋稅）/2（解釋：） 
 alpha3 <- 0.467 #利用y=A*L^alpha*K^(1-alpha)，取ln後由GDP成長率來算
 sigma3 <- 0.7  #毛慶生論文
 A3 <- 1 #normalized to 1
 epislon3 <- 0.77 #毛慶生論文
 tau_l3 <- 0.12 #財政部
 tau_c3 <- 0.05
-chi3 <- chi2
+chi3 <- chi2 #chi2 = chi3
 ```
 
+求解新的k，另為kone1
 ```{r 求解新的k, kone}
 funToFindkone <- function(kone){
     rho3 
@@ -229,6 +233,7 @@ kone1 <- solofkone$root
 kone1
 ```
 
+求得比較靜態後的k*後，就可以解得新的其他內解變數。
 ```{r 求解比較靜態後的其他內解變數值}
 funoflcone <- function(kvalue) {
   rho3 
@@ -241,6 +246,7 @@ funoflcone <- function(kvalue) {
   tau_l3 <- 0.12 
   tau_c3 <- 0.05
   chi3
+  
   lone <- (((rho3+delta3*(1-tau_k3))/((1-tau_k3)*(1-alpha3)*A3))^(1/alpha3))*kvalue
   cone <- (((rho3+delta3*(1-tau_k3))/((1-tau_k3)*(1-alpha3)))-delta3)*kvalue
   yone <- A3*(lone^alpha3)*(kvalue^(1-alpha3))
@@ -249,12 +255,24 @@ funoflcone <- function(kvalue) {
   S <- chi3*(((1-lone)^(1-epislon3))/(1-epislon3))
   uone <- R+S
   
-  c(kvalue,lone,cone,yone,uone,chi3) -> Afterstatics
+  Afterstatics <- c(c("kone", "lone", "cone", "yone", "uone"), round(c(kvalue,lone,cone,yone,uone), digits = 6))
+  
   Afterstatics
 }
 
 funoflcone(kone1)
-Beforestatics
+
+library(plyr)
+Beforestatics %>% as.data.frame() -> Beforestatics1
+Beforestatics1 %<>% cbind(., Beforestatics1[6:10,]) 
+Beforestatics1[1:5,] -> Beforestatics1
+
+
+funoflcone(kone1)
+Beforestatics1
+
+
+
 
 #lone = 0.256691 > lzero = 0.2518 why?
 
