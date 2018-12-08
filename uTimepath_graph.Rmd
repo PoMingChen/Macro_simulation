@@ -1,0 +1,44 @@
+---
+title: "uTimepath_graph"
+author: "Group2"
+date: "2018/12/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+title: "yTimepath_graph"
+author: "Group2"
+date: "2018/12/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 作圖utimepath
+```{r}
+u %>% data.frame(stringsAsFactors = F, check.names = F) %>% rownames_to_column(var = "utimeperiod") -> u1
+colnames(u1)[2] <- "value"
+u1$utimeperiod <- 0:100 
+
+u1
+```
+
+```{r}
+BFudata <-  u1 %>% filter(utimeperiod == 0) %>% rbind(u1 %>% filter(utimeperiod == 100))
+BFudata
+
+u1 %>% ggplot(aes(x = utimeperiod, y = value)) + geom_point() + geom_point(data = BFudata, col = 'red') -> ugraph
+ugraph
+
+
+ugraph + geom_hline(yintercept = u_starzero) + annotate("text", x= 12, y=BFudata[1,2]+0.00005, label = "t0 = -5.802143") +          annotate("text", x= 95, y=BFudata[2,2]+0.002, label = "t100 = -5.748482") + annotate("text", x= 95, y=BFudata[1,2]+0.032, label = "-5.771755") -> ugraph
+
+ugraph + theme_classic() + labs(x = "", title = "Timepath of u") -> ugraph
+ugraph
+```
