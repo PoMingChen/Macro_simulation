@@ -1,0 +1,33 @@
+---
+title: "cTimepath_graph"
+author: "Group2"
+date: "2018/12/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 作圖ctimepath
+```{r}
+c %>% data.frame(stringsAsFactors = F, check.names = F) %>% rownames_to_column(var = "ctimeperiod") -> c1
+colnames(c1)[2] <- "value"
+c1$ctimeperiod <- 0:100 
+
+c1
+```
+
+```{r}
+BFcdata <-  c1 %>% filter(ctimeperiod == 0) %>% rbind(c1 %>% filter(ctimeperiod == 100))
+BFcdata
+
+c1 %>% ggplot(aes(x = ctimeperiod, y = value)) + geom_point() + geom_point(data = BFcdata, col = 'red') -> cgraph
+cgraph
+
+
+cgraph + geom_hline(yintercept = C_starzero) + annotate("text", x= 12, y=BFcdata[1,2]+0.00005, label = "t0 = 0.5088379") +          annotate("text", x= 95, y=BFcdata[2,2]+0.00035, label = "t100 = 0.5182523") + annotate("text", x= 95, y=BFcdata[1,2]+0.00411, label = "0.512654") -> cgraph
+
+cgraph + theme_classic() + labs(x = "", title = "Timepath of c") -> cgraph
+cgraph
+```
