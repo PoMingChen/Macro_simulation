@@ -1,0 +1,268 @@
+---
+title: "Marco Mid-term HW Calibration"
+author: "Group2"
+date: "2018/12/6"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r set to global enviro}
+rho2 <- 0.01035 
+delta2 <- 0.04 
+tau_k2 <- 0.03  
+alpha2 <- 0.64 
+sigma2 <- 0.7  
+A2 <- 1
+epislon2 <- 0.77 
+tau_l2 <- 0.12 
+tau_c2 <- 0.05
+```
+
+```{r, include=FALSE}
+library(readxl)
+library(tidyverse)
+library(magrittr)
+```
+
+
+```{r 整理資料, echo=FALSE, results='hide', message='FALSE'}
+
+
+Nationaldata <- read_excel("./Nationaldata.xlsx")
+Nationaldata[61:70,] -> Nationaldata
+
+Nationaldata %>% select(-c(2)) %>% mutate(平均每人GDP折合美元 = X__2) %>% 
+  mutate(平均每人民間消費折合美元 = X__3) -> Nationaldata
+
+
+# Nationaldata %>% select(c(平均每人GDP:平均每人民間消費折合美元)) %>% as.numeric() 為什麼這個式子跑不動？
+
+as.numeric(Nationaldata$平均每人GDP) -> Nationaldata$平均每人GDP
+as.numeric(Nationaldata$平均每人GDP折合美元) -> Nationaldata$平均每人GDP折合美元
+as.numeric(Nationaldata$平均每人民間消費支出) -> Nationaldata$平均每人民間消費支出
+as.numeric(Nationaldata$平均每人民間消費折合美元) -> Nationaldata$平均每人民間消費折合美元
+
+Nationaldata %>% select(-c(3,5))
+
+
+```
+
+### ㄧ、比較靜態之前
+
+根據勞動部資料，我們假設每週工時為40 + 46*0.2*0.25(一個月有20%時間需要加班) = 42.3hr。因此起初每週工作比例lzero = 42.3/(24*5) = 0.3525。
+
+> 勞動基準法第30條：勞工每日正常工作時間不得超過8小時，每週正常工作時數不得超過40小時。以及，勞動基準法第32條：雇主延長勞工之工作時間連同正常工作時間，1日不得超過12小時。 延長之工作時間，1個月不得超過46小時。
+
+進一步地帶入l*公式，可求得資本的起初值kzero
+```{r 求解起初k*}
+lzero <- 0.3525
+
+funtok <- function(k) {
+  
+  #l已知，求解k
+  return(lzero-(((rho2+delta2*(1-tau_k2))/((1-tau_k2)*(1-alpha2)*A2))^(1/alpha2))*k)
+
+}
+
+uniroot(funtok, c(-3,100), tol = 0.000000001) -> solofk
+
+solofk$root -> kzero
+
+kzero
+```
+
+有了kzero，進一步地，我們可以求得起初的消費c是多少。
+```{r 求解期初c}
+funtoc <- function(c) {
+  
+  return(c-(((rho2+delta2*(1-tau_k2))/((1-tau_k2)*(1-alpha2)))-delta2)*kzero)
+}
+
+uniroot(funtoc, c(-3,50), tol = 0.000000001) -> solofc
+
+solofc$root -> czero
+
+czero
+```
+
+有了起初的l*，k*後就可以求得起初的y值。
+```{r 期初y值}
+yzero <- A2*(lzero^alpha2)*(kzero^(1-alpha2))
+yzero
+```
+
+到目前為止有了所有的內解變數值。
+```{r 期初內解變數值, eval=FALSE}
+lzero 
+kzero 
+czero 
+yzero 
+```
+
+做簡易的資料配適度檢驗
+> czero/yzero = 0.6189 與實際資料消費支出佔GDP比重誤差情況尚可以。因此，進一步完善模型，並且做比較靜態。
+
+```{r 整理消費佔GDP近十年比重}
+Nationaldata
+# Nationaldata %>% summarise(近十年人均消費支出佔GDP比重=mean(人均消費支出佔GDP比重))
+```
+
+### 二、求解模型內尚未知的chi值
+
+```{r 求解chi}
+funTochi <- function(chi){
+    rho2 <- 0.01035 
+    delta2 <- 0.04 
+    tau_k2 <- 0.03  
+    alpha2 <- 0.64 
+    sigma2 <- 0.7  
+    A2 <- 1 
+    epislon2 <- 0.77 
+    tau_l2 <- 0.12 
+    tau_c2 <- 0.05
+    
+    w <- A2*alpha2*(lzero^(alpha2-1))*(kzero^(1-alpha2))
+    
+M <- ((1-tau_l2)*w)/(chi*(1+tau_c2))
+
+P <- (1-(((rho2+delta2*(1-tau_k2))/((1-tau_k2)*(1-alpha2)*A2))^(1/alpha2))*kzero)
+Q <- (((1-tau_k2)*(1-alpha2))/(rho2+alpha2*delta2*(1-tau_k2)))
+
+return(kzero-(((M^(1/sigma2))*(P^(epislon2/sigma2))*Q)))
+}
+
+uniroot(funTochi, c(0,10000), tol = 0.0001, extendInt = "yes") -> solofchi2
+
+
+chi2 <- solofchi2$root
+chi2
+```
+
+同時，已經有起初c, l值，可以求得起初u值
+```{r 計算期初u值}
+R <- ((czero^(1-sigma2)-1)/(1-sigma2))
+S <- chi2*(((1-lzero)^(1-epislon2))/(1-epislon2))
+uzero <- R+S
+uzero
+```
+
+比較靜態前的小整理
+```{r 期初內解變數值&chi, eval=FALSE}
+lzero 
+kzero 
+czero 
+yzero 
+chi2 
+```
+
+```{r}
+Beforestatics <- c(c("kzero", "lzero", "czero", "yzero", "uzero"), c(kzero,lzero,czero,yzero,uzero))
+Beforestatics
+```
+
+### 三、做比較靜態
+
+tau_k產生下降(降稅)
+```{r 比較靜態外生參數 tau_k3}
+
+rho3 <- 0.01035 
+delta3 <- 0.04 
+tau_k3 <- 0.025  
+alpha3 <- 0.64 
+sigma3 <- 0.7  
+A3 <- 1 
+epislon3 <- 0.77 
+tau_l3 <- 0.12 
+tau_c3 <- 0.05
+chi3 <- chi2
+```
+
+求解新的k，另為kone1
+```{r 求解新的kone}
+funToFindkone <- function(kone){
+
+    l <- (((rho3+delta3*(1-tau_k3))/((1-tau_k3)*(1-alpha3)*A3))^(1/alpha3))*kone
+    w <- A3*alpha3*l^(alpha3-1)*kone^(1-alpha3)
+    
+M <- ((1-tau_l3)*w)/(chi3*(1+tau_c3))
+
+P <- (1-(((rho3+delta3*(1-tau_k3))/((1-tau_k3)*(1-alpha3)*A3))^(1/alpha3))*kone)
+Q <- (((1-tau_k3)*(1-alpha3))/(rho3+alpha3*delta3*(1-tau_k3)))
+
+return(kone-(((M^(1/sigma3))*(P^(epislon3/sigma3))*Q)))
+}
+
+uniroot(funToFindkone, c(1,10), tol = 0.000000001) -> solofkone
+
+kone1 <- solofkone$root
+kone1
+```
+
+求得比較靜態後的k*後，就可以解得新的其他內解變數。
+```{r 求解比較靜態後的其他內解變數值}
+funoflcone <- function(kvalue) {
+
+  lone <- (((rho3+delta3*(1-tau_k3))/((1-tau_k3)*(1-alpha3)*A3))^(1/alpha3))*kvalue
+  cone <- (((rho3+delta3*(1-tau_k3))/((1-tau_k3)*(1-alpha3)))-delta3)*kvalue
+  yone <- A3*(lone^alpha3)*(kvalue^(1-alpha3))
+  
+  R <- ((cone^(1-sigma3)-1)/(1-sigma3))
+  S <- chi3*(((1-lone)^(1-epislon3))/(1-epislon3))
+  uone <- R+S
+  
+  Afterstatics <- c(c("kone", "lone", "cone", "yone", "uone"), round(c(kvalue,lone,cone,yone,uone), digits = 6))
+  
+  Afterstatics
+}
+
+library(plyr)
+Beforestatics %>% as.data.frame() -> Beforestatics1
+Beforestatics1 %<>% cbind(., Beforestatics1[6:10,]) 
+Beforestatics1[1:5,] -> Beforestatics1
+
+
+funoflcone(kone1)
+Beforestatics1
+
+
+
+
+#lone = 0.256691 > lzero = 0.2518 why?
+
+
+```
+
+
+### 設定參數
+
+內生變數：
+
+- y : 這邊要用人均的，因為A也是有normalized到1
+
+- c
+
+- l : 勞動基準法第30條：勞工每日正常工作時間不得超過8小時，每週正常工作時數不得超過40小時。 勞動基準法第32條：雇主延長勞工之工作時間連同正常工作時間，1日不得超過12小時。 延長之工作時間，1個月不得超過46小時。
+
+每週工時假設為：40+46*0.2=49.2，約取50hr。50/168=0.2976
+
+- k
+
+#### 設定外生參數
+
+- 時間偏好率(rho)：參考自臺灣銀行定期存款利率。時間偏好率為個人主觀在跨期選擇時候，對當期消費的偏愛程度。市場利率則為現實世界借貸雙方的達成均衡的市場利率，加上臺灣進入低利時代已久，因此民眾普遍以定存利率當做當期與未來做消費投資的基本參考。因此其作為時間偏好率。
+
+- 折舊率(delta)：
+
+- 資本利得稅（tau_k）：
+
+- 產生勞動份額（labor share)(alpha) ：將生產函數取ln微分
+
+

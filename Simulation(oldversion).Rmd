@@ -1,0 +1,88 @@
+---
+title: "The simulation"
+author: "PoMingChen"
+date: "2018/12/2"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+K_star #2.070334   2.186393
+L_star #0.3116271  0.310997
+C_star #0.512654   0.5182561
+y_star #0.6161707  0.6275757
+u_star #-5.771755  -5.748465
+U_star #-150.0656  -149.4601
+```
+
+```{r K時間路徑}
+library(dplyr)
+
+k <- c() #建立空的物件
+l <- c()
+c <- c()
+y <- c()
+u <- c()
+U <- c()
+
+for (t in 0:1000) {
+  K_star
+  L_star
+  C_star
+  
+  sigma1 <- 2
+  epislon <- 1.5
+  chi <- 2
+  rho <- 0.04
+  
+  
+  Ktimepath <- K_star + (-0.1161)*(0.916)^t
+  rbind(k,Ktimepath) -> k
+  
+  Ltimepath <- L_star + (-0.1161)*(-0.044)*((0.916)^t)
+  rbind(l, Ltimepath) -> l
+
+  Ctimepath <- ((1-Ltimepath)^(0.75)*(Ktimepath)^(0.18))/(2.0729*(Ltimepath)^(0.18))
+  rbind(c, Ctimepath) -> c
+  
+  ytimepath <- ((Ktimepath)^(0.36))*(Ltimepath)^(0.64)
+  rbind(y, ytimepath) -> y
+  
+  utimepath <- 1-1/Ctimepath-4*(1/((1-Ltimepath)^0.5))
+  rbind(u, utimepath) -> u
+  
+  Utimepath <- sum(((1/(1+rho))^t*utimepath))
+  rbind(U, Utimepath) -> U
+}
+
+
+k
+l
+c
+y
+u
+U
+sum(U)
+
+
+
+```
+
+```{r}
+# k %>% rbind(.,l) %>% rbind(., c)
+
+
+k %>% plot(., xlab = "time period", ylab = "k_value", main = "Timepath of k")
+l %>% plot(., xlab = "time period", ylab = "l_value",main = "Timepath of l")
+c %>% plot(., xlab = "time period", ylab = "c_value",main = "Timepath of c")
+y %>% plot(., xlab = "time period", ylab = "y_value", main = "Timepath of y")
+u %>% plot(., xlab = "time period", ylab = "u_value", main = "Timepath of u")
+# U %>% plot(., xlab = "time period", ylab = "value")
+
+```
