@@ -1,0 +1,33 @@
+---
+title: "yTimepath_graph"
+author: "Group2"
+date: "2018/12/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 作圖ytimepath
+```{r}
+y %>% data.frame(stringsAsFactors = F, check.names = F) %>% rownames_to_column(var = "ytimeperiod") -> y1
+colnames(y1)[2] <- "value"
+y1$ytimeperiod <- 0:100 
+
+y1
+```
+
+```{r}
+BFydata <-  y1 %>% filter(ytimeperiod == 0) %>% rbind(y1 %>% filter(ytimeperiod == 100))
+BFydata
+
+y1 %>% ggplot(aes(x = ytimeperiod, y = value)) + geom_point() + geom_point(data = BFydata, col = 'red') -> ygraph
+ygraph
+
+
+ygraph + geom_hline(yintercept = y_starzero) + annotate("text", x= 12, y=BFydata[1,2]+0.00005, label = "t0 = 0.6218189") +          annotate("text", x= 95, y=BFydata[2,2]+0.00035, label = "t100 = 0.6275749") + annotate("text", x= 95, y=BFydata[1,2]-0.0052, label = "0.6161707") -> ygraph
+
+ygraph + theme_classic() + labs(x = "", title = "Timepath of y") -> ygraph
+ygraph
+```
