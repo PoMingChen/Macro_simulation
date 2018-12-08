@@ -1,0 +1,69 @@
+---
+title: "Simulation timepath"
+author: "Group2"
+date: "2018/12/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r eval=FALSE}
+k
+l
+c
+y
+u
+U
+```
+
+the Welfare change
+```{r}
+sum(U)
+```
+
+```{r, eval=FALSE}
+k %>% plot(., xlab = "time period", ylab = "k_value", main = "Timepath of k")
+l %>% plot(., xlab = "time period", ylab = "l_value",main = "Timepath of l")
+c %>% plot(., xlab = "time period", ylab = "c_value",main = "Timepath of c")
+y %>% plot(., xlab = "time period", ylab = "y_value", main = "Timepath of y")
+u %>% plot(., xlab = "time period", ylab = "u_value", main = "Timepath of u")
+```
+
+### 作圖整理
+
+1. 轉換成ggplot2可以使用的dataframe形式：兩排資料：timeperiod & value
+2. 用gemo_point
+3. 用不同圖層標上第一點以及最後一點
+4. 註解annotate 兩點的值
+5. 拉vertical line = initial value
+6. 標上兩軸座標軸以及主標題
+7. 完成一個圖後，依此類推其他四個
+```{r}
+library(tibble)
+library(ggplot2)
+```
+
+
+### 作圖ktimepath
+```{r}
+k %>% data.frame(stringsAsFactors = F, check.names = F) %>% rownames_to_column(var = "Ktimeperiod") -> k1
+colnames(k1)[2] <- "value"
+k1$Ktimeperiod <- 0:100 
+
+k1 
+```
+
+```{r}
+BFkdata <-  k1 %>% filter(Ktimeperiod == 0) %>% rbind(k1 %>% filter(Ktimeperiod == 100))
+
+k1 %>% ggplot(aes(x = Ktimeperiod, y = value)) + geom_point() + geom_point(data = BFkdata, col = 'red') -> kgraph
+
+
+
+kgraph + geom_hline(yintercept = K_starzero) + annotate("text", x= 8, y=2.073793, label = "t0 = 2.070293") +          annotate("text", x= 95, y=2.183375, label = "t100 = 2.186375") + annotate("text", x= 85, y=2.073793, label = "2.070334") -> kgraph
+
+kgraph + theme_classic() + labs(x = "", title = "Timepath of k") -> kgraph
+kgraph
+```
