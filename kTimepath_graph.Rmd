@@ -18,11 +18,6 @@ u
 U
 ```
 
-the Welfare change
-```{r}
-sum(U)
-```
-
 ```{r, eval=FALSE}
 k %>% plot(., xlab = "time period", ylab = "k_value", main = "Timepath of k")
 l %>% plot(., xlab = "time period", ylab = "l_value",main = "Timepath of l")
@@ -57,7 +52,7 @@ k1
 
 ```{r}
 BFkdata <-  k1 %>% filter(Ktimeperiod == 0) %>% rbind(k1 %>% filter(Ktimeperiod == 100))
-
+BFkdata
 k1 %>% ggplot(aes(x = Ktimeperiod, y = value)) + geom_point() + geom_point(data = BFkdata, col = 'red') -> kgraph
 
 
