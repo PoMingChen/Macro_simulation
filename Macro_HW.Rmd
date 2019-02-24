@@ -1,0 +1,179 @@
+---
+title: "第五題"
+author: "PoMingChen"
+date: "2018/11/30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r 起初參數設定}
+rho <- 0.04
+delta <- 0.05
+tau_k <- 0.3
+alpha <- 0.64
+sigma1 <- 2
+A <- 1
+epislon <- 1.5
+tau_l <- 0.2
+chi <- 2
+tau_c <- 0.1
+```
+
+```{r 求解K_star}
+# A list with at least four components: root and f.root give the location of the root and the value of the function evaluated at that point. iter and estim.prec give the number of iterations(疊代，反覆運算，數學裡若干次使用一個數學法則得出的量) used and an approximate estimated precision for root. (If the root occurs at one of the endpoints, the estimated precision is NA.)
+
+# Further components may be added in future: component init.it was added in R 3.1.0.
+
+funToFindKRoot <- function(K){
+  
+    l <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K
+    w <- A*alpha*l^(alpha-1)*K^(1-alpha)
+    
+M <- ((1-tau_l)*w)/(chi*(1+tau_c))
+
+P <- (1-(((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K)
+Q <- (((1-tau_k)*(1-alpha))/(rho+alpha*delta*(1-tau_k)))
+
+return(K-(((M^(1/sigma1))*(P^(epislon/sigma1))*Q)))
+}
+
+uniroot(funToFindKRoot, c(1,4), tol = 0.000000001) -> solofK
+
+solofK
+
+K_starzero <- solofK$root
+K_starzero
+```
+
+```{r 第三題L_star}
+L_starzero <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K_starzero
+L_starzero
+
+#(rho+delta*(1-tau_k))
+#((1-tau_k)*(1-alpha)*A)
+```
+
+```{r 第三題C_star}
+C_starzero <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)))-delta)*K_starzero
+C_starzero
+  
+#(rho+delta*(1-tau_k))
+#((1-tau_k)*(1-alpha))
+
+```
+
+```{r y_star}
+y_starzero <- A*(L_starzero^alpha)*(K_starzero^(1-alpha))
+y_starzero
+```
+
+```{r U_star}
+R <- ((C_starzero^(1-sigma1)-1)/(1-sigma1))
+S <- chi*(((1-L_starzero)^(1-epislon))/(1-epislon))
+
+u_starzero <- R+S
+
+u_starzero
+
+U_starzero <- (1+rho)/rho*u_starzero
+
+U_starzero
+```
+
+```{r}
+K_starzero#2.070334 
+L_starzero#0.3116271 
+C_starzero#0.512654 
+y_starzero#0.6161707 
+u_starzero#-5.771755
+U_starzero#-150.0656
+```
+
+做比較靜態
+
+```{r 起初參數設定}
+rho <- 0.04
+delta <- 0.05
+tau_k <- 0.25
+alpha <- 0.64
+sigma1 <- 2
+A <- 1
+epislon <- 1.5
+tau_l <- 0.2
+chi <- 2
+tau_c <- 0.1
+```
+
+```{r 求解K_star}
+# A list with at least four components: root and f.root give the location of the root and the value of the function evaluated at that point. iter and estim.prec give the number of iterations(疊代，反覆運算，數學裡若干次使用一個數學法則得出的量) used and an approximate estimated precision for root. (If the root occurs at one of the endpoints, the estimated precision is NA.)
+
+# Further components may be added in future: component init.it was added in R 3.1.0.
+
+funToFindKRoot <- function(K){
+  
+    l <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K
+    w <- A*alpha*l^(alpha-1)*K^(1-alpha)
+    
+M <- ((1-tau_l)*w)/(chi*(1+tau_c))
+
+P <- (1-(((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K)
+Q <- (((1-tau_k)*(1-alpha))/(rho+alpha*delta*(1-tau_k)))
+
+return(K-(((M^(1/sigma1))*(P^(epislon/sigma1))*Q)))
+}
+
+uniroot(funToFindKRoot, c(1,4), tol = 0.000000001) -> solofK
+
+solofK
+
+K_starone <- solofK$root
+K_starone
+```
+
+```{r 第三題L_star}
+L_starone <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K_starone
+L_starone
+
+#(rho+delta*(1-tau_k))
+#((1-tau_k)*(1-alpha)*A)
+```
+
+```{r 第三題C_star}
+C_starone <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)))-delta)*K_starone
+C_starone
+  
+#(rho+delta*(1-tau_k))
+#((1-tau_k)*(1-alpha))
+
+```
+
+```{r y_star}
+y_starone <- A*(L_starone^alpha)*(K_starone^(1-alpha))
+y_starone
+```
+
+```{r U_star}
+R <- ((C_starone^(1-sigma1)-1)/(1-sigma1))
+S <- chi*(((1-L_starone)^(1-epislon))/(1-epislon))
+
+u_starone <- R+S
+
+u_starone
+
+U_starone <- (1+rho)/rho*u_starone
+
+U_starone
+```
+
+```{r}
+K_starone#2.186393 
+L_starone#0.310997
+C_starone#0.5182561
+y_starone#0.6275757
+u_starone#-5.748465 
+U_starone#-149.4601
+```
+

@@ -1,14 +1,99 @@
 ---
 title: "The simulation"
-author: "PoMingChen"
-date: "2018/12/2"
+author: "Group2"
+date: "2018/12/6"
 output:
-  html_document: default
   pdf_document: default
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+```{r 起初參數設定, echo=FALSE}
+rho <- 0.04
+delta <- 0.05
+tau_k <- 0.25
+alpha <- 0.64
+sigma1 <- 2
+A <- 1
+epislon <- 1.5
+tau_l <- 0.2
+chi <- 2
+tau_c <- 0.1
+```
+
+```{r 求解K_star, echo=FALSE, results='hide'}
+# A list with at least four components: root and f.root give the location of the root and the value of the function evaluated at that point. iter and estim.prec give the number of iterations(疊代，反覆運算，數學裡若干次使用一個數學法則得出的量) used and an approximate estimated precision for root. (If the root occurs at one of the endpoints, the estimated precision is NA.)
+
+# Further components may be added in future: component init.it was added in R 3.1.0.
+
+funToFindKRoot <- function(K){
+    rho <- 0.04
+    delta <- 0.05
+    tau_k <- 0.25
+    alpha <- 0.64
+    sigma1 <- 2
+    A <- 1
+    epislon <- 1.5
+    tau_l <- 0.2
+    chi <- 2
+    tau_c <- 0.1
+    l <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K
+    w <- A*alpha*l^(alpha-1)*K^(1-alpha)
+    
+M <- ((1-tau_l)*w)/(chi*(1+tau_c))
+
+P <- (1-(((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K)
+Q <- (((1-tau_k)*(1-alpha))/(rho+alpha*delta*(1-tau_k)))
+
+return(K-(((M^(1/sigma1))*(P^(epislon/sigma1))*Q)))
+}
+
+uniroot(funToFindKRoot, c(1,4), tol = 0.000000001) -> solofK
+
+solofK
+
+K_star <- solofK$root
+K_star
+```
+
+```{r 第三題L_star, echo=FALSE, results='hide'}
+L_star <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)*A))^(1/alpha))*K_star
+L_star
+
+#(rho+delta*(1-tau_k))
+#((1-tau_k)*(1-alpha)*A)
+```
+
+```{r 第三題C_star, echo=FALSE, results='hide'}
+C_star <- (((rho+delta*(1-tau_k))/((1-tau_k)*(1-alpha)))-delta)*K_star
+C_star
+  
+#(rho+delta*(1-tau_k))
+#((1-tau_k)*(1-alpha))
+
+```
+
+```{r y_star, echo=FALSE, results='hide'}
+y_star <- A*(L_star^alpha)*(K_star^(1-alpha))
+y_star
+```
+
+```{r U_star, echo=FALSE, results='hide'}
+R <- ((C_star^(1-sigma1)-1)/(1-sigma1))
+S <- chi*(((1-L_star)^(1-epislon))/(1-epislon))
+
+u_star <- R+S
+
+u_star
+
+U_star <- (1+rho)/rho*u_star
+
+U_star
 ```
 
 ```{r}
@@ -21,9 +106,9 @@ U_star #-150.0656  -149.4601
 ```
 
 ```{r K時間路徑}
-library(dplyr)
+#library(dplyr)
 
-k <- c() #建立空的物件
+k <- c() 
 l <- c()
 c <- c()
 y <- c()
@@ -59,28 +144,26 @@ for (t in 0:100) {
   Utimepath <- sum(((1/(1+rho))^t*utimepath))
   rbind(U, Utimepath) -> U
 }
+```
 
-
+```{r eval=FALSE}
 k
 l
 c
 y
 u
-# U
-
-
-
+U
 ```
 
+the Welfare change
 ```{r}
-# k %>% rbind(.,l) %>% rbind(., c)
+sum(U)
+```
 
-
+```{r, eval=FALSE}
 k %>% plot(., xlab = "time period", ylab = "k_value", main = "Timepath of k")
 l %>% plot(., xlab = "time period", ylab = "l_value",main = "Timepath of l")
 c %>% plot(., xlab = "time period", ylab = "c_value",main = "Timepath of c")
 y %>% plot(., xlab = "time period", ylab = "y_value", main = "Timepath of y")
 u %>% plot(., xlab = "time period", ylab = "u_value", main = "Timepath of u")
-# U %>% plot(., xlab = "time period", ylab = "value")
-
 ```

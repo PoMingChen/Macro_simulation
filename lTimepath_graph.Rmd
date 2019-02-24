@@ -11,6 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### 作圖ltimepath
 ```{r}
+library(dplyr)
+library(tibble)
+library(ggplot2)
 l %>% data.frame(stringsAsFactors = F, check.names = F) %>% rownames_to_column(var = "ltimeperiod") -> l1
 colnames(l1)[2] <- "value"
 l1$ltimeperiod <- 0:100 
@@ -22,7 +25,7 @@ l1
 BFldata <-  l1 %>% filter(ltimeperiod == 0) %>% rbind(l1 %>% filter(ltimeperiod == 100))
 
 l1 %>% ggplot(aes(x = ltimeperiod, y = value)) + geom_point() + geom_point(data = BFldata, col = 'red') -> lgraph
-lgraph
+BFldata
 
 
 lgraph + geom_hline(yintercept = L_starzero) + annotate("text", x= 12, y=0.3161054, label = "t0 = 0.3161054") +          annotate("text", x= 95, y=0.3111978, label = "t100 = 0.3109978") + annotate("text", x= 3, y=0.3118271, label = "0.3116271") -> lgraph
